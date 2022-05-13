@@ -1,57 +1,81 @@
-import { useState } from "react";
+import { useEffect, useState, ChangeEvent } from "react";
 
 function App() {
-  const [toDo, setTodo] = useState("");
-  const [toDoList, setToDoList] = useState([""]);
-  const onChange = (event: any) => setTodo(event.target.value);
-  const onDeleted = (todoIndex: number) => {
-    setToDoList((currentArr: string[]) =>
-      currentArr.filter((_, idx) => idx !== todoIndex)
-    );
-  };
-  const onAdded = (event: any) => {
-    event.preventDefault();
-    if (toDo === "") {
+  const [loading, setLoading] = useState(true);
+  const [coinPrice, setCoinPrice] = useState(0);
+  const [coins, setCoins] = useState([
+    {
+      id: "",
+      name: "",
+      rank: 0,
+      symbol: "",
+      quotes: {
+        USD: {
+          price: 0,
+        },
+      },
+    },
+  ]);
+  const [coinName, setCoinName] = useState("");
+  const [inputMoney, setInputMoney] = useState(0);
+
+  const onChangeFn = (e: ChangeEvent<HTMLInputElement>) => {
+    if (typeof e.target.value !== "number") {
       return;
     }
-    setToDoList((prevArr: string[]) => [toDo, ...prevArr]); //state는 언제나 새로 생성
-    setTodo(""); //empty value
+
+    setInputMoney(e.target.value);
   };
+
+  const onSelectFn = (e: ChangeEvent<HTMLSelectElement>) => {
+    setCoinName(e.target.value);
+    coins.filter((coin) => coin.name === e.target.value);
+    // setCoinPrice();
+  };
+
+  useEffect(() => {
+    fetch("https://api.coinpaprika.com/v1/tickers")
+      .then((res) => res.json())
+      .then((json) => {
+        setCoins(json);
+        setLoading(false);
+      });
+  }, []);
+
+  function getPage() {
+    return (
+      <div key="inputMoney">
+        <span>$ : </span>
+        <input
+          type="number"
+          style={{
+            width: "500px",
+          }}
+          onChange={onChangeFn}
+        />
+        <hr />
+        <select
+          style={{
+            width: "100px",
+          }}
+          onChange={onSelectFn}
+        >
+          {coins.map((coin) => {
+            return (
+              <option key={coin.id} value={coin.name}>
+                {coin.name} ({coin.symbol})
+              </option>
+            );
+          })}
+        </select>
+        {/* <input type="number" value={} /> */}
+      </div>
+    );
+  }
   return (
-    <div>
-      <h1>My Simple ToDo App</h1>
-      <ul>
-        {toDoList.map((item, idx) => {
-          if (item === "") {
-            return null;
-          }
-          return (
-            <li key={idx}>
-              <span>{item}</span>
-              <button
-                style={{
-                  backgroundColor: "initial",
-                  borderColor: "black",
-                  borderRadius: "6px",
-                  marginLeft: "10px",
-                  color: "red",
-                }}
-                onClick={() => onDeleted(idx)}
-              >
-                X
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      <hr />
-      <input
-        type="text"
-        value={toDo}
-        onChange={onChange}
-        placeholder="write your to do"
-      />
-      <button onClick={onAdded}>add</button>
+    <div key={"hi"}>
+      <h1>The Coins {loading ? null : `(${coins.length})`}</h1>
+      {loading ? <strong>Loading...</strong> : getPage()}
     </div>
   );
 }
