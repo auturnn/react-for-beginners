@@ -14,7 +14,9 @@ function Movie(movie: MovieData) {
     <div>
       <img src={movie.cover_image} alt="" />
       <h2>
-        <Link to={`/movie/${movie.id}`}>{movie.title}</Link>
+        <Link to={`${process.env.PUBLIC_URL}/movie/${movie.id}`}>
+          {movie.title}
+        </Link>
       </h2>
       <p>
         {movie.summary.length > 235
